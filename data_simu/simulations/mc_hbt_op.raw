@@ -1,12 +1,0 @@
-Title: ** sch_path: /foss/pdks/ihp-sg13g2/libs.tech/xschem/sg13g2_tests/mc_hbt_13g2.sch
-Date: Sun Mar  2 11:26:08  2025
-Command: ngspice-44.2, Build Sun Jan 12 13:17:29 UTC 2025
-Plotname: Operating Point
-Flags: real
-No. Variables: 2
-No. Points: 1
-Variables:
-	0	i(vc)	current
-	1	i(all)	current
-Binary:
-¤ú¾XM?¤ú¾XM?
