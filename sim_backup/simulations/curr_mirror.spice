@@ -1,0 +1,45 @@
+** sch_path: /foss/designs/simulations/curr_mirror.sch
+**.subckt curr_mirror
+XM1 net1 a VDD VDD sg13_hv_pmos w=1.0u l=0.45u ng=1 m=5
+XM2 a a VDD VDD sg13_hv_pmos w=1.0u l=0.45u ng=1 m=5
+R1 net2 GND 100 m=1
+V1 VDD GND 3
+XQ1 net1 net1 GND GND npn13G2l Nx={Nx1} El={El1}
+XQ2 a net1 b GND npn13G2l Nx={Nx2} El={El2}
+Vtest b net2 0
+**** begin user architecture code
+
+
+.lib /foss/pdks/ihp-sg13g2/libs.tech/ngspice/models/cornerMOShv.lib mos_tt
+.lib /foss/pdks/ihp-sg13g2/libs.tech/ngspice/models/cornerHBT.lib hbt_typ
+
+
+
+
+.temp 27
+.param Nx2=1 El2=2.5 Nx1=1 El1=2.5
+.control
+set plotiptat = ' ';
+
+let num1 = 1
+let num0 = 0
+repeat 4
+	alterparam Nx2 = $&num1;
+	echo 'Nx2 = $&num1'
+	reset
+	dc temp 0 150 1
+	set plotiptat = ( $plotiptat {$curplot}.I(Vtest) )
+	let num1 = num1 + 1
+end
+plot $plotiptat
+
+
+.endc
+.save all
+
+
+**** end user architecture code
+**.ends
+.GLOBAL VDD
+.GLOBAL GND
+.end

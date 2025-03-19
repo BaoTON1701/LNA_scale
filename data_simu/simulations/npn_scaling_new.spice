@@ -1,0 +1,90 @@
+** sch_path: /foss/designs/simu_test/npn_scaling_new.sch
+**.subckt npn_scaling_new
+XQ2 net8 net1 GND GND npn13G2l Nx={Nx_var} El={El_var}
+V1 VDD GND 3.3
+Vib_l VDD net1 0
+Vic_l VDD net8 0
+Vib_v VDD net2 0
+Vic_v VDD net3 0
+XQ3 net3 net2 GND GND npn13G2v Nx={Nx_var} El={El_var}
+* noconn #net7
+xQ10 net6 net4 GND GND npn13G2 Nx=10
+xQ11 net6 net4 GND GND npn13G2 Nx=10
+xQ12 net6 net4 GND GND npn13G2 Nx=10
+xQ13 net6 net4 GND GND npn13G2 Nx=10
+xQ14 net6 net4 GND GND npn13G2 Nx=7
+XQ15 net7 net5 GND GND npn13G2l Nx=4 El=4
+XQ16 net7 net5 GND GND npn13G2l Nx=4 El=4
+XQ17 net7 net5 GND GND npn13G2l Nx=4 El=4
+* noconn #net4
+* noconn #net6
+* noconn #net5
+**** begin user architecture code
+
+
+.lib /foss/pdks/ihp-sg13g2/libs.tech/ngspice/models/cornerHBT.lib hbt_typ
+;.lib /foss/pdks/ihp-sg13g2/libs.tech/ngspice/models/cornerHBT.lib hbt_typ_stat
+;Note: Nx of npn13g2 Nx = 1-10
+;Nx of npn13g2l Nx = 1-4
+;Nx of npn13g2v Nx = 1-8
+
+
+
+.param El_var = 1 temper = 27 Nx_var = 4
+.temp {temper}
+.op
+.control
+echo -----------------------------------------------------
+echo starting DC sim
+echo -----------------------------------------------------
+;control of changing params Nx (number of emitter in a row)
+set plotib = ' ';
+set plotib_l = ' ';
+set plotib_v = ' ';
+set plotic = ' ';
+set plotic_l = ' ';
+set plotic_v = ' ';
+set plotbeta = ' ';
+set plotbeta_v = ' ';
+set plotbeta_l = ' ';
+let Nx_1 = 1
+let El_1 = 1
+
+foreach val1 1 2 3 4 5 6 7 8;
+	echo ---------------------------------
+	alterparam Nx_var = $val1
+	reset
+	foreach val2 1 1.5 2 2.5 3 3.5 4 4.5 5;
+		alterparam El_var = $val2
+		reset
+		op
+		dc V1 0.1 1.6 0.05
+		if $val2 < 3
+			set plotib_l = ( $plotib_l ({$curplot}.I(Vib_l)) );
+			set plotic_l = ( $plotic_l ({$curplot}.I(Vic_l)) );
+			set plotbeta_l = ( $plotbeta_l {$curplot}.I(vic_l)/{$curplot}.I(vib_l) );
+		end;
+	 	if $val1 < 5.1
+			set plotib_v = ( $plotib_v ({$curplot}.I(Vib_v)) );
+			set plotic_v = ( $plotic_v ({$curplot}.I(Vic_v)) );
+			set plotbeta_v = ( $plotbeta_v {$curplot}.I(vic_v)/{$curplot}.I(vib_v) );
+		end;
+	end;
+
+end;
+
+set wr_singlescale;
+set wr_vecnames;
+plot $plotic_l ylog
+plot $plotic_v ylog
+;wrdata gummel_npn13g2_El1.txt $plotib $plotic $plotbeta;
+;wrdata sim_dat/gummel_npn13g2l_El1_min30C.txt $plotib_l $plotic_l $plotbeta_l;
+;wrdata sim_dat/gummel_npn13g2v_El1_min30C.txt $plotib_v $plotic_v $plotbeta_v;
+.endc
+.save all
+
+**** end user architecture code
+**.ends
+.GLOBAL GND
+.GLOBAL VDD
+.end

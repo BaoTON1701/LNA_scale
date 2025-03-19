@@ -1,0 +1,24 @@
+** sch_path: /foss/designs/untitled-4.sch
+**.subckt untitled-4
+XQ1 out in GND net2 npn13G2l Nx=1 El=2.5
+V1 net1 GND 0.8
+E1 in net1 VOL=' 0.005*sin(time) '
+R1 VDD out 1k m=1
+V2 VDD GND 3.3
+**** begin user architecture code
+
+
+.lib /foss/pdks/ihp-sg13g2/libs.tech/ngspice/models/cornerHBT.lib hbt_typ
+
+.control
+	tran 10u
+	plot in out
+.endc
+.save all
+
+
+**** end user architecture code
+**.ends
+.GLOBAL VDD
+.GLOBAL GND
+.end

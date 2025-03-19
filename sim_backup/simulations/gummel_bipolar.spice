@@ -1,0 +1,46 @@
+** sch_path: /foss/designs/simu_test/gummel_bipolar.sch
+**.subckt gummel_bipolar
+VC a net1 0
+V1 a GND 2
+VB a net2 0
+XQ1 net1 net2 GND GND npn13G2v Nx={Nx_var} El={El_var}
+**** begin user architecture code
+
+
+.lib /foss/pdks/ihp-sg13g2/libs.tech/ngspice/models/cornerHBT.lib hbt_typ
+
+
+
+.temp 27
+.param El_var = 5u;
+.param Nx_var = 1;
+.control
+set plotic = ' ';
+set plotib = ' ';
+set plotbeta = ' ';
+
+let Elx = 1;
+repeat 5;
+	alterparam El_var = $&Elx;
+	reset;
+	dc V1 0.1 2 0.05
+	set plotib = ( $plotib {$curplot}.I(VB) )
+	set plotic = ( $plotic {$curplot}.I(VC) )
+	set plotbeta = ( $plotbeta (-{$curplot}.I(VC)/{$curplot}.I(VB)) );
+
+	;plot dc1.I(VB)
+	let Elx = Elx + 0.5
+end
+
+plot loglog $plotib $plotic
+;plot $plotib
+plot $plotbeta
+
+.endc
+.save all
+
+
+**** end user architecture code
+**.ends
+.GLOBAL GND
+.end
