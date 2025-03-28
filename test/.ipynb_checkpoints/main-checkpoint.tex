@@ -1,0 +1,186 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath} % For math environments and symbols
+\usepackage{graphicx} % To include images if needed (though not used here for the circuit)
+\usepackage{geometry} % For setting margins
+\geometry{a4paper, margin=1in} % Example page setup
+
+\title{Noise Analysis of a BJT Differential Common-Emitter Amplifier}
+\author{AI Assistant Analysis}
+\date{\today} % Or specify March 25, 2025
+
+\begin{document}
+
+\maketitle
+
+\section{Circuit Overview}
+
+The circuit under analysis is a standard Bipolar Junction Transistor (BJT) differential pair amplifier, also known as a long-tailed pair or differential common-emitter amplifier. The schematic shows:
+\begin{itemize}
+    \item \textbf{Inputs:} Differential voltage applied between `vin1` (base of Q1) and `vin2` (base of Q2).
+    \item \textbf{Transistors:} Two matched NPN BJTs, Q1 and Q2 (model `npn13G2v`).
+    \item \textbf{Load Resistors:} Resistors R1 and R2 (600 $\Omega$ each) connect the collectors of Q1 and Q2, respectively, to the positive supply VDD.
+    \item \textbf{Outputs:} Differential voltage taken between `vout1` (collector of Q1) and `vout2` (collector of Q2).
+    \item \textbf{Tail Current Source:} An ideal or non-ideal current source IEE biases the emitters, setting the total DC emitter current $I_{EE} = I_{E1} + I_{E2}$. Assuming symmetry, the collector current in each transistor is $I_C \approx I_{EE}/2$.
+\end{itemize}
+The analysis assumes the circuit is symmetrical (Q1 and Q2 are identical, R1 = R2 = $R_C$).
+
+\section{Noise Sources}
+
+Several components contribute noise to the circuit's output:
+
+\subsection{Transistors (Q1 and Q2)}
+Active devices like BJTs are major noise contributors.
+\begin{itemize}
+    \item \textbf{Collector Shot Noise:} Arises from the random fluctuation of charge carriers crossing the collector-base junction. It is modeled as a noise current source $i_{nc}$ in parallel with the collector terminal. Its Power Spectral Density (PSD) is white (frequency independent, excluding high-frequency effects) and given by:
+    \begin{equation}
+        \bar{i^2_{nc}} = 2 q I_C
+    \end{equation}
+    where $q$ is the elementary charge and $I_C$ is the DC collector current.
+
+    \item \textbf{Base Shot Noise:} Arises from the random fluctuation of carriers constituting the base current. Modeled as a noise current source $i_{nb}$ in parallel with the base terminal. Its PSD is also white:
+    \begin{equation}
+        \bar{i^2_{nb}} = 2 q I_B = \frac{2 q I_C}{\beta}
+    \end{equation}
+    where $I_B$ is the DC base current and $\beta$ is the DC current gain.
+
+    \item \textbf{Base Resistance Thermal Noise:} The physical base resistance $r_b$ generates thermal (Johnson-Nyquist) noise. Modeled as a noise voltage source $v_{n,rb}$ in series with the intrinsic base. Its PSD is white:
+    \begin{equation}
+        \bar{v^2_{n,rb}} = 4 k T r_b
+    \end{equation}
+    where $k$ is Boltzmann's constant and $T$ is the absolute temperature.
+
+    \item \textbf{Flicker Noise (1/f Noise):} Dominant at low frequencies, caused by trapping/detrapping of charges. Often modeled as an input-referred noise source (voltage or current) with a PSD inversely proportional to frequency $f$:
+    \begin{equation}
+        \text{e.g., } \bar{v^2_{n,flicker}} \approx \frac{K_f}{f} \quad \text{or} \quad \bar{i^2_{n,flicker}} \approx \frac{K_i I_B^a}{f^b}
+    \end{equation}
+    where $K_f, K_i, a, b$ are process and device dependent parameters. For simplicity, we often represent its input-referred voltage contribution per transistor as $S_{v_{flicker,in}}(f)$.
+\end{itemize}
+
+\subsection{Load Resistors (R1 and R2)}
+Passive resistors generate thermal noise.
+\begin{itemize}
+    \item \textbf{Thermal Noise:} Modeled as a voltage source $v_{n,R}$ in series (or current source in parallel) with the resistor. Its PSD is white:
+    \begin{equation}
+        \bar{v^2_{n,R}} = 4 k T R_C
+    \end{equation}
+    where $R_C = R1 = R2 = 600\,\Omega$.
+\end{itemize}
+
+\subsection{Tail Current Source (IEE)}
+\begin{itemize}
+    \item \textbf{Noise:} If implemented with active devices, IEE will contribute its own noise. This noise acts as a common-mode signal at the emitters. Due to the common-mode rejection of the differential pair, this noise is ideally suppressed at the differential output. However, circuit asymmetries can convert some of this common-mode noise into differential noise. For this primary analysis, we assume either an ideal noiseless source or that its contribution after rejection is negligible compared to the other sources.
+\end{itemize}
+
+\section{Input-Referred Noise Analysis}
+
+We aim to find the equivalent noise voltage source placed differentially between the inputs (`vin1` and `vin2`) that produces the same differential output noise PSD (`\bar{v^2_{n,out,diff}}`) as all internal sources combined. This is the input-referred differential noise voltage PSD, $\bar{v^2_{n,in,diff}}(f)$.
+
+\subsection{Differential Gain}
+The small-signal differential voltage gain is approximately:
+\begin{equation}
+    A_{d,diff} = \left| \frac{v_{out1} - v_{out2}}{v_{in1} - v_{in2}} \right| \approx g_m R_C
+\end{equation}
+where $g_m = I_C / V_T$ is the transconductance of each transistor and $V_T = kT/q$ is the thermal voltage.
+
+\subsection{Output Noise Contributions}
+We sum the power (mean square values) of the differential output noise caused by each uncorrelated source.
+\begin{itemize}
+    \item Noise from $r_{b1}$ and $r_{b2}$: Each $v_{n,rb}$ acts like an input signal, producing an output voltage magnitude of $g_m R_C v_{n,rb}$ at its respective collector. The differential output noise PSD is $2 \times (\bar{v^2_{n,rb}} \times (g_m R_C)^2)$.
+    \item Noise from $i_{nc1}$ and $i_{nc2}$: Each $i_{nc}$ flows through its $R_C$, producing an output voltage $-i_{nc} R_C$. The differential output noise PSD is $2 \times (\bar{i^2_{nc}} \times R_C^2)$.
+    \item Noise from $i_{nb1}$ and $i_{nb2}$: Each $i_{nb}$ effectively acts like an input current, causing a collector current $\beta i_{nb}$. The differential output noise PSD is approximately $2 \times (\bar{i^2_{nb}} \times (\beta R_C)^2)$.
+    \item Noise from $R_{C1}$ and $R_{C2}$: Each $v_{n,R}$ appears directly at its respective output node. The differential output noise PSD is $\bar{v^2_{n,R1}} + \bar{v^2_{n,R2}} = 2 \times \bar{v^2_{n,R}}$.
+    \item Flicker Noise: This is usually modeled referred to the input, $S_{v_{flicker,in}}(f)$ per transistor. Its contribution to the differential output PSD is $2 \times S_{v_{flicker,in}}(f) \times (g_m R_C)^2$.
+\end{itemize}
+
+\subsection{Total Input-Referred Noise}
+The total differential output noise PSD is the sum of these contributions:
+\begin{equation}
+\begin{split}
+    \bar{v^2_{n,out,diff}}(f) \approx & \, 2 \times (4 k T r_b) \times (g_m R_C)^2 \\
+                                      & + 2 \times (2 q I_C) \times R_C^2 \\
+                                      & + 2 \times (2 q I_B) \times (\beta R_C)^2 \\
+                                      & + 2 \times (4 k T R_C) \\
+                                      & + 2 \times S_{v_{flicker,in}}(f) \times (g_m R_C)^2
+\end{split}
+\end{equation}
+
+To find the input-referred noise, we divide by the squared differential gain, $A_{d,diff}^2 \approx (g_m R_C)^2$:
+\begin{equation}
+    \bar{v^2_{n,in,diff}}(f) = \frac{\bar{v^2_{n,out,diff}}(f)}{A_{d,diff}^2}
+\end{equation}
+Substituting the terms and simplifying:
+\begin{align*}
+    \bar{v^2_{n,in,diff}}(f) \approx & \, \frac{2 (4 k T r_b) (g_m R_C)^2}{(g_m R_C)^2} \\
+                                      & + \frac{2 (2 q I_C) R_C^2}{(g_m R_C)^2} \\
+                                      & + \frac{2 (2 q I_B) (\beta R_C)^2}{(g_m R_C)^2} \\
+                                      & + \frac{2 (4 k T R_C)}{(g_m R_C)^2} \\
+                                      & + \frac{2 S_{v_{flicker,in}}(f) (g_m R_C)^2}{(g_m R_C)^2} \\
+%
+    \approx & \, 8 k T r_b \\
+             & + \frac{4 q I_C}{g_m^2} \\
+             & + \frac{4 q I_B \beta^2}{g_m^2} \\
+             & + \frac{8 k T R_C}{(g_m R_C)^2} \\
+             & + 2 S_{v_{flicker,in}}(f)
+\end{align*}
+Using $g_m = q I_C / (k T)$, $I_B = I_C / \beta$, we can simplify the shot noise terms:
+\begin{align*}
+    \frac{4 q I_C}{g_m^2} &= \frac{4 q I_C}{(q I_C / k T)^2} = \frac{4 (k T)^2}{q I_C} = \frac{4 k T}{g_m} \\
+    \frac{4 q I_B \beta^2}{g_m^2} &= \frac{4 q (I_C/\beta) \beta^2}{g_m^2} = \frac{4 q I_C \beta}{g_m^2} = \beta \left( \frac{4 k T}{g_m} \right)
+\end{align*}
+It is common practice to combine the collector and base shot noise contributions. For $\beta \gg 1$, the term $4kT/g_m$ dominates over the $r_{\pi}$ related base shot noise term. A standard result (derived slightly differently but equivalent for input noise voltage) combines collector and base shot noise effectively into $4kT/(2g_m)$ per transistor. For the pair, the combined input-referred contribution from shot noise and base resistance thermal noise is often written as $2 \times 4kT(r_b + 1/(2g_m)) = 8kT r_b + 4kT/g_m$.
+
+Thus, the final expression for the input-referred differential noise voltage PSD becomes:
+\begin{equation}
+\label{eq:final_noise}
+\boxed{
+\bar{v^2_{n,in,diff}}(f) \approx \underbrace{8 k T r_b}_{\substack{\text{Base R} \\ \text{Thermal}}} + \underbrace{\frac{4 k T}{g_m}}_{\substack{\text{Collector (+Base)} \\ \text{Shot Noise}}} + \underbrace{2 S_{v_{flicker,in}}(f)}_{\substack{\text{Flicker Noise} \\ \text{(1/f)}}} + \underbrace{\frac{8 k T}{g_m^2 R_C}}_{\substack{\text{Load R} \\ \text{Thermal}}}
+}
+\end{equation}
+
+\section{Discussion and Dependencies}
+
+Equation \eqref{eq:final_noise} highlights how different parameters affect the amplifier's noise performance:
+
+\begin{itemize}
+    \item \textbf{Bias Current ($I_{EE}$):} Increasing $I_{EE}$ increases $I_C \approx I_{EE}/2$, which increases $g_m$.
+        \begin{itemize}
+            \item [+] Reduces the shot noise term ($4kT/g_m$).
+            \item [+] Reduces the load resistor noise term ($8kT/(g_m^2 R_C)$).
+            \item [-] May increase flicker noise ($S_{v_{flicker,in}}$ often depends on bias).
+            \item [-] Increases power consumption.
+        \end{itemize}
+    There is often an optimal bias current for minimum noise, especially when considering flicker noise.
+
+    \item \textbf{Load Resistors ($R_C = 600\,\Omega$):}
+        \begin{itemize}
+            \item Generate thermal noise, but their input-referred contribution ($8kT/(g_m^2 R_C)$) decreases as $R_C$ increases (assuming $g_m$ is constant, which isn't typical as bias might be adjusted to maintain voltage headroom).
+            \item Primarily determines voltage gain ($A_{d,diff} \approx g_m R_C$). Higher gain makes noise from subsequent stages less relevant but increases the output noise from the differential pair itself.
+        \end{itemize}
+
+    \item \textbf{Transistor Parameters:}
+        \begin{itemize}
+            \item $r_b$: Lower base resistance is desirable. Achieved through device design and potentially larger transistor size (trade-off with capacitance).
+            \item Flicker Noise ($S_{v_{flicker,in}}$): Process-dependent. Choose low-flicker noise devices or processes if low-frequency noise is critical.
+            \item $\beta$: High $\beta$ is generally good, reducing base current and potentially flicker noise. Its effect on shot noise is embedded in the $g_m$ term.
+        \end{itemize}
+
+    \item \textbf{Frequency ($f$):}
+        \begin{itemize}
+            \item At low frequencies, flicker noise ($1/f$) typically dominates.
+            \item At mid-to-high frequencies, the white noise sources (thermal noise $8kT r_b$ and shot noise $4kT/g_m$) dominate. The load resistor contribution is often smaller than these transistor-intrinsic terms if $g_m$ is high.
+        \end{itemize}
+\end{itemize}
+
+\section{Conclusion}
+
+The input-referred noise voltage of the BJT differential amplifier is primarily determined by the thermal noise of the base resistances ($r_b$), the shot noise associated with the collector currents (represented by the $4kT/g_m$ term), flicker noise at low frequencies, and the thermal noise of the load resistors referred back to the input.
+
+Designing for low noise involves trade-offs:
+\begin{itemize}
+    \item Increasing bias current ($I_{EE}$) reduces shot noise and the load resistor contribution but increases power consumption and potentially flicker noise.
+    \item Using transistors with low $r_b$ and low flicker noise coefficients is crucial.
+    \item The impact of load resistors depends on the gain and bias requirements.
+\end{itemize}
+This analysis neglects the noise contribution of the tail current source (IEE) and assumes perfect symmetry, which might not hold in practice. A full noise simulation using the specific `npn13G2v` model parameters in a circuit simulator (like SPICE) would provide more precise quantitative results.
+
+\end{document}
